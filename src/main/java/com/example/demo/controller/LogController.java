@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/logs")
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.middleware.mongo.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.middleware.mongo.enabled", havingValue = "true")
 public class LogController {
 
     private final LogService logService;

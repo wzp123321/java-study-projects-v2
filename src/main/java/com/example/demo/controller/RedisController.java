@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/api/redis")
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.middleware.redis.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.middleware.redis.enabled", havingValue = "true")
 public class RedisController {
 
     private final RedisService redisService;

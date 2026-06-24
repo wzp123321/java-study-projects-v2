@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.middleware.es.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.middleware.es.enabled", havingValue = "true")
 public class ProductService {
 
     private final ProductRepository productRepository;

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.middleware.mongo.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.middleware.mongo.enabled", havingValue = "true")
 public class LogService {
 
     private final LogRepository logRepository;

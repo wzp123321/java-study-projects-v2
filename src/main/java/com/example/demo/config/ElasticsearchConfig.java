@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 
 @Configuration
 @EnableElasticsearchRepositories(basePackages = "com.example.demo.repository")
-@ConditionalOnProperty(name = "spring.elasticsearch.enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = "app.middleware.es.enabled", havingValue = "true")
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
     @Override

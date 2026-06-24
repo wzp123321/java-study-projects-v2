@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 9999
   servlet:
     context-path: /
 
@@ -9,6 +9,7 @@ spring:
   application:
     name: java-project-1
 
+  # ===== MySQL(主数据库,常驻)=====
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/demo_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
@@ -31,68 +32,80 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+  # ===== Redis / MongoDB 连接 =====
+  # 当前两者都未启用(Mongo 在 yml 顶部 autoconfigure.exclude 里排除,Redis 走命令行参数),
+  # 留空的目的是避免 Spring Boot 自动装配 MongoDatabaseFactory/MongoTemplate Bean。
   data:
-    mongodb:
-      uri: mongodb://localhost:27017/demo_mongo
-
     redis:
       host: localhost
       port: 6379
       password:
       database: 0
-      timeout: 3000ms
+      timeout: 2000ms         # 命令超时 2s,连接不上时业务接口不卡
+      connect-timeout: 2000ms # 建立连接超时 2s
       lettuce:
+        shutdown-timeout: 100ms
         pool:
           max-active: 8
           max-idle: 8
           min-idle: 0
           max-wait: -1ms
 
+    # MongoDB 启用时取消下面注释 + yml 顶部移除 MongoAutoConfiguration 的 exclude
+    mongodb:
+      # uri: mongodb://localhost:27017/demo_mongo
+      # auto-index-creation: true
+
+  # ===== 关闭的中间件(本机未装)=====
+  # 关键修复:把 ES、Kafka、RedisRepositories、MongoDB 的自动配置从启动期移除,
+  # 这样不依赖中间件,服务也能起来,只是对应的 Controller 不会生效。
   autoconfigure:
     exclude:
+      # ===== Elasticsearch(本机未装)=====
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
       - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
       - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      # ===== Kafka(本机未装)=====
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      # ===== MongoDB(本机未装)=====
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
 
+  # ===== 缓存类型 =====
+  # 关闭状态:Redis 未启用,@EnableCaching 也不会加载,这里设 none 避免自动装配默认缓存管理器
+  # 启用 Redis 时改成 redis 即可
   cache:
-    type: redis
+    type: none
 
+  # ===== Elasticsearch(本机未装,先关掉连接)=====
   elasticsearch:
     uris: http://localhost:9200
-    connection-timeout: 10s
-    socket-timeout: 30s
+    connection-timeout: 2s
+    socket-timeout: 5s
 
+  # ===== Kafka(本机未装,先关掉连接)=====
   kafka:
     bootstrap-servers: localhost:9092
-    producer:
-      acks: all
-      retries: 3
-      batch-size: 16384
-      buffer-memory: 33554432
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-    consumer:
-      group-id: demo-group
-      auto-offset-reset: earliest
-      enable-auto-commit: true
-      auto-commit-interval: 1000
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    listener:
-      concurrency: 3
-      missing-topics-fatal: false
-    admin:
-      fail-fast: false
-      auto-create: false
 
+# ===== 业务开关:哪些中间件视为启用 =====
 app:
   middleware:
+    # ES 默认关:本机未装。装了之后改 true 即可
     es:
       enabled: false
+    # Kafka 默认关:本机未装
     kafka:
       enabled: false
+    # Mongo 默认关:本机未装,启动会卡
+    mongo:
+      enabled: false
+    # Redis 默认关:本机未装,启动会卡
+    redis:
+      enabled: false
 
+# ===== Actuator(健康检查)=====
 management:
   endpoints:
     web:
@@ -101,12 +114,27 @@ management:
   endpoint:
     health:
       show-details: always
+  health:
+    # 即使依赖的中间件挂了,健康检查不要让 /actuator/health 整体报 DOWN
+    redis:
+      enabled: false
+    mongo:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    kafka:
+      enabled: false
 
 logging:
   level:
     com.example.demo: DEBUG
     org.springframework.kafka: WARN
     org.springframework.data.redis: INFO
+    org.springframework.boot.autoconfigure: WARN
+    org.springframework.data.mongodb: WARN
+    org.springframework.data.elasticsearch: WARN
+    org.mongodb.driver: WARN
+    org.apache.kafka: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 

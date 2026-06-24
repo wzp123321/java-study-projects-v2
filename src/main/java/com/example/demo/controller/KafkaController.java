@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/kafka")
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.middleware.kafka.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.middleware.kafka.enabled", havingValue = "true")
 public class KafkaController {
 
     private final KafkaProducerService kafkaProducerService;

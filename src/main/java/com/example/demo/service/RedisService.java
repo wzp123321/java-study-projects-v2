@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.middleware.redis.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.middleware.redis.enabled", havingValue = "true")
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;

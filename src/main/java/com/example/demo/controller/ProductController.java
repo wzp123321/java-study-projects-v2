@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.middleware.es.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.middleware.es.enabled", havingValue = "true")
 public class ProductController {
 
     private final ProductService productService;
